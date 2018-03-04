@@ -104,7 +104,7 @@ public class Favorites extends Forwarder implements View.OnClickListener, View.O
             }
 
             image.setVisibility(View.VISIBLE);
-            image.setContentDescription(pojo.displayName);
+            image.setContentDescription(pojo.getName());
         }
 
         // Hide empty favorites (not enough favorites yet)

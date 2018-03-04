@@ -4,7 +4,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.graphics.Color;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
@@ -21,7 +20,6 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import fr.neamar.kiss.KissApplication;
-import fr.neamar.kiss.MainActivity;
 import fr.neamar.kiss.R;
 import fr.neamar.kiss.UIColors;
 import fr.neamar.kiss.adapter.RecordAdapter;
@@ -50,12 +48,12 @@ public class ContactsResult extends Result {
 
         // Contact name
         TextView contactName = view.findViewById(R.id.item_contact_name);
-        contactName.setText(enrichText(contactPojo.displayName, context));
+        contactName.setText(enrichText(contactPojo.getName(), contactPojo.nameMatchPositions, context));
 
         // Contact phone
         TextView contactPhone = view.findViewById(R.id.item_contact_phone);
         if (contactPojo.displayTags != null)
-            contactPhone.setText(enrichText(contactPojo.displayTags + contactPojo.phone, context));
+            contactPhone.setText(oldEnrichText(contactPojo.displayTags + contactPojo.phone, context));
         else
             contactPhone.setText(contactPojo.phone);
 
@@ -148,7 +146,7 @@ public class ContactsResult extends Result {
                 (android.content.ClipboardManager) context.getSystemService(Context.CLIPBOARD_SERVICE);
         assert clipboard != null;
         android.content.ClipData clip = android.content.ClipData.newPlainText(
-                "Phone number for " + contactPojo.displayName,
+                "Phone number for " + contactPojo.getName(),
                 contactPojo.phone);
         clipboard.setPrimaryClip(clip);
     }
