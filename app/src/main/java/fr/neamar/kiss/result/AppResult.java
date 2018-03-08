@@ -16,6 +16,7 @@ import android.net.Uri;
 import android.os.Build;
 import android.preference.PreferenceManager;
 import android.provider.Settings;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -256,21 +257,24 @@ public class AppResult extends Result {
     @Override
     public void doLaunch(Context context, View v) {
         try {
-            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                LauncherApps launcher = (LauncherApps) context.getSystemService(Context.LAUNCHER_APPS_SERVICE);
-                assert launcher != null;
-                launcher.startMainActivity(className, appPojo.userHandle.getRealHandle(), v.getClipBounds(), null);
-            } else {
-                Intent intent = new Intent(Intent.ACTION_MAIN);
-                intent.addCategory(Intent.CATEGORY_LAUNCHER);
-                intent.setComponent(className);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+            Log.d("APP_NAME", className.getClassName());
+            if (!(className.getClassName().equals("com.rogerbassonsrenart.paddletennis.MenuActivity"))) {
+                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                    LauncherApps launcher = (LauncherApps) context.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+                    assert launcher != null;
+                    launcher.startMainActivity(className, appPojo.userHandle.getRealHandle(), v.getClipBounds(), null);
+                } else {
+                    Intent intent = new Intent(Intent.ACTION_MAIN);
+                    intent.addCategory(Intent.CATEGORY_LAUNCHER);
+                    intent.setComponent(className);
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
 
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                    intent.setSourceBounds(v.getClipBounds());
+                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                        intent.setSourceBounds(v.getClipBounds());
+                    }
+
+                    context.startActivity(intent);
                 }
-
-                context.startActivity(intent);
             }
         } catch (ActivityNotFoundException | NullPointerException e) {
             // Application was just removed?
