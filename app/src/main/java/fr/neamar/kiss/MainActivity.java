@@ -4,6 +4,7 @@ import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
 import android.app.Activity;
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -47,6 +48,7 @@ import fr.neamar.kiss.ui.BottomPullEffectView;
 import fr.neamar.kiss.ui.KeyboardScrollHider;
 import fr.neamar.kiss.ui.ListPopup;
 import fr.neamar.kiss.ui.SearchEditText;
+import fr.neamar.kiss.utils.BluetoothComm;
 import fr.neamar.kiss.utils.PackageManagerUtils;
 import fr.neamar.kiss.utils.SystemUiVisibilityHelper;
 
@@ -314,6 +316,9 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         displayClearOnInput();
 
         systemUiVisibilityHelper = new SystemUiVisibilityHelper(this);
+
+
+        BluetoothComm bt = new BluetoothComm(this);
 
         /*
          * Defer everything else to the forwarders

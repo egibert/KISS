@@ -7,13 +7,13 @@
         android:name="com.android.launcher.permission.INSTALL_SHORTCUT"
         android:permissionGroup="android.permission-group.SYSTEM_TOOLS"
         android:protectionLevel="normal" />
-
     <permission
         android:name="com.android.launcher.permission.UNINSTALL_SHORTCUT"
         android:permissionGroup="android.permission-group.SYSTEM_TOOLS"
         android:protectionLevel="normal" />
 
     <!-- Self explanatory -->
+    <uses-permission android:name="android.permission.BLUETOOTH" />
     <uses-permission android:name="android.permission.READ_CONTACTS" />
     <!-- To call a phone number directly without displaying the dialer -->
     <uses-permission android:name="android.permission.CALL_PHONE" />
@@ -73,6 +73,7 @@
             </intent-filter>
             <intent-filter>
                 <action android:name="android.intent.action.ASSIST" />
+
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
 
@@ -100,10 +101,8 @@
             <intent-filter>
                 <action android:name="android.intent.action.PACKAGE_ADDED" />
                 <action android:name="android.intent.action.PACKAGE_REMOVED" />
-
                 <action android:name="android.intent.action.MEDIA_MOUNTED" />
                 <action android:name="android.intent.action.MEDIA_REMOVED" />
-
                 <action android:name="android.intent.action.ACTION_MEDIA_MOUNTED" />
                 <action android:name="android.intent.action.ACTION_MEDIA_REMOVED" />
 
@@ -111,7 +110,6 @@
                 <data android:scheme="package" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".broadcast.LocaleChangedReceiver"
             android:enabled="true"
@@ -148,7 +146,6 @@
                 <action android:name="com.android.launcher.action.INSTALL_SHORTCUT" />
             </intent-filter>
         </receiver>
-
         <receiver
             android:name=".broadcast.UninstallShortcutHandler"
             android:permission="com.android.launcher.permission.UNINSTALL_SHORTCUT">
@@ -163,6 +160,15 @@
         <service android:name=".dataprovider.SearchProvider" />
         <service android:name=".dataprovider.SettingsProvider" />
         <service android:name=".dataprovider.ShortcutsProvider" />
+
+        <activity
+            android:name=".BluetoothComm"
+            android:label="@string/title_activity_bluetooth_comm"
+            android:parentActivityName=".MainActivity">
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="fr.neamar.kiss.MainActivity" />
+        </activity>
     </application>
 
 </manifest>

@@ -32,6 +32,7 @@ import fr.neamar.kiss.R;
 import fr.neamar.kiss.adapter.RecordAdapter;
 import fr.neamar.kiss.pojo.AppPojo;
 import fr.neamar.kiss.ui.ListPopup;
+import fr.neamar.kiss.utils.BluetoothComm;
 import fr.neamar.kiss.utils.SpaceTokenizer;
 
 public class AppResult extends Result {
@@ -257,29 +258,37 @@ public class AppResult extends Result {
     @Override
     public void doLaunch(Context context, View v) {
         try {
+
+            BluetoothComm bt = BluetoothComm.getInstance(context);
             Log.d("APP_NAME", className.getClassName());
             if (!(className.getClassName().equals("com.rogerbassonsrenart.paddletennis.MenuActivity"))) {
-                if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-                    LauncherApps launcher = (LauncherApps) context.getSystemService(Context.LAUNCHER_APPS_SERVICE);
-                    assert launcher != null;
-                    launcher.startMainActivity(className, appPojo.userHandle.getRealHandle(), v.getClipBounds(), null);
-                } else {
-                    Intent intent = new Intent(Intent.ACTION_MAIN);
-                    intent.addCategory(Intent.CATEGORY_LAUNCHER);
-                    intent.setComponent(className);
-                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
-
-                    if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                        intent.setSourceBounds(v.getClipBounds());
-                    }
-
-                    context.startActivity(intent);
-                }
+                launchApp(context, v);
+            } else if(!bt.isLocked()) {
+                launchApp(context, v);
             }
         } catch (ActivityNotFoundException | NullPointerException e) {
             // Application was just removed?
             // (null pointer exception can be thrown on Lollipop+ when app is missing)
             Toast.makeText(context, R.string.application_not_found, Toast.LENGTH_LONG).show();
+        }
+    }
+
+    private void launchApp(Context context, View v) {
+        if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            LauncherApps launcher = (LauncherApps) context.getSystemService(Context.LAUNCHER_APPS_SERVICE);
+            assert launcher != null;
+            launcher.startMainActivity(className, appPojo.userHandle.getRealHandle(), v.getClipBounds(), null);
+        } else {
+            Intent intent = new Intent(Intent.ACTION_MAIN);
+            intent.addCategory(Intent.CATEGORY_LAUNCHER);
+            intent.setComponent(className);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_RESET_TASK_IF_NEEDED);
+
+            if (android.os.Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
+                intent.setSourceBounds(v.getClipBounds());
+            }
+
+            context.startActivity(intent);
         }
     }
 }
