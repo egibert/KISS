@@ -161,14 +161,6 @@
         <service android:name=".dataprovider.SettingsProvider" />
         <service android:name=".dataprovider.ShortcutsProvider" />
 
-        <activity
-            android:name=".BluetoothComm"
-            android:label="@string/title_activity_bluetooth_comm"
-            android:parentActivityName=".MainActivity">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="fr.neamar.kiss.MainActivity" />
-        </activity>
     </application>
 
 </manifest>
