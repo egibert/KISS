@@ -261,9 +261,8 @@ public class AppResult extends Result {
 
             BluetoothComm bt = BluetoothComm.getInstance(context);
             Log.d("APP_NAME", className.getClassName());
-            if (!(className.getClassName().equals("com.rogerbassonsrenart.paddletennis.MenuActivity"))) {
-                launchApp(context, v);
-            } else if(!bt.isLocked()) {
+            boolean isInList = className.getClassName().equals("com.rogerbassonsrenart.paddletennis.MenuActivity");
+            if (!isInList || (isInList && !bt.isLocked())) {
                 launchApp(context, v);
             }
         } catch (ActivityNotFoundException | NullPointerException e) {
