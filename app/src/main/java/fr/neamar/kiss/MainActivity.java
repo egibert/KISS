@@ -318,7 +318,9 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         systemUiVisibilityHelper = new SystemUiVisibilityHelper(this);
 
 
-        TCPServer server = new TCPServer(8080);
+        Intent server= new Intent(this, TCPServer.class);
+        startService(server);
+
         BluetoothComm bt = new BluetoothComm(this);
 
         /*
