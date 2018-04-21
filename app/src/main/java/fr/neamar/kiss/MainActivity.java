@@ -318,10 +318,11 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         systemUiVisibilityHelper = new SystemUiVisibilityHelper(this);
 
 
-        Intent server= new Intent(this, TCPServer.class);
-        startService(server);
+        Thread tcpServer = new Thread(new TCPServer());
+        tcpServer.start();
 
-        BluetoothComm bt = new BluetoothComm(this);
+        Thread bt = new Thread(new BluetoothComm());
+        bt.start();
 
         /*
          * Defer everything else to the forwarders

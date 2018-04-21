@@ -12,39 +12,54 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.UUID;
 
-public class BluetoothComm {
+public class BluetoothComm implements Runnable {
 
     private final String UUID_DEVICE = "00001101-0000-1000-8000-00805F9B34FB";
     private final String MAC = "00:18:E4:00:27:B3";
 
     private Context context;
 
-    private static BluetoothComm single_instance;
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothSocket bluetoothSocket = null;
-    private boolean locked;
 
-    public static BluetoothComm getInstance(Context c)
-    {
-        if (single_instance == null)
-            single_instance = new BluetoothComm(c);
-
-        return single_instance;
-    }
-
-    public BluetoothComm(Context c) {
-        locked = true;
-        context = c;
+    @Override
+    public void run() {
         init();
         connectToDevice(MAC);
-    }
 
-    public void reconnect() {
-        connectToDevice(MAC);
-    }
 
-    public boolean isLocked() {
-        return locked;
+        InputStream in = null;
+        OutputStream out = null;
+
+        try {
+            in = bluetoothSocket.getInputStream();
+            out = bluetoothSocket.getOutputStream();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+
+
+        byte[] buffer = new byte[1024];
+        int bytes;
+
+        while (true) {
+            try {
+                bytes = in.read(buffer);
+                String strReceived = new String(buffer, 0, bytes);
+                final String msgReceived = String.valueOf(bytes) +
+                        " bytes received:\n"
+                        + strReceived;
+                DataHolder.getInstance().setLocked(true);
+                Log.d("BLUE", strReceived);
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+
+                final String msgConnectionLost = "Connection lost:\n"
+                        + e.getMessage();
+            }
+        }
     }
 
     // Start and setup bluetooth
@@ -69,7 +84,6 @@ public class BluetoothComm {
         BluetoothDevice device = BluetoothAdapter.getDefaultAdapter().getRemoteDevice(address);
 
 
-
         try {
             bluetoothSocket = device.createRfcommSocketToServiceRecord(UUID.fromString(UUID_DEVICE));
         } catch (IOException e) {
@@ -89,61 +103,7 @@ public class BluetoothComm {
             return false;
         }
 
-        ThreadConnected myThreadConnected = new ThreadConnected(bluetoothSocket);
-        myThreadConnected.start();
         return true;
-     }
-
-    /*
-    ThreadConnected:
-    Background Thread to handle Bluetooth data communication
-    after connected
-    */
-    private class ThreadConnected extends Thread {
-        private final BluetoothSocket connectedBluetoothSocket;
-        private final InputStream connectedInputStream;
-        private final OutputStream connectedOutputStream;
-
-        public ThreadConnected(BluetoothSocket socket) {
-            connectedBluetoothSocket = socket;
-            InputStream in = null;
-            OutputStream out = null;
-
-            try {
-                in = socket.getInputStream();
-                out = socket.getOutputStream();
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
-
-            connectedInputStream = in;
-            connectedOutputStream = out;
-        }
-
-        @Override
-        public void run() {
-            byte[] buffer = new byte[1024];
-            int bytes;
-
-            while (true) {
-                try {
-                    bytes = connectedInputStream.read(buffer);
-                    String strReceived = new String(buffer, 0, bytes);
-                    final String msgReceived = String.valueOf(bytes) +
-                            " bytes received:\n"
-                            + strReceived;
-                    locked = false;
-                    Log.d("BLUE", strReceived);
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    //e.printStackTrace();
-
-                    final String msgConnectionLost = "Connection lost:\n"
-                            + e.getMessage();
-                }
-            }
-        }
     }
 }
 

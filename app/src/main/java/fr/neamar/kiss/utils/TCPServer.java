@@ -1,7 +1,5 @@
 package fr.neamar.kiss.utils;
 
-import android.app.IntentService;
-import android.content.Intent;
 import android.util.Log;
 
 import java.io.BufferedReader;
@@ -11,22 +9,15 @@ import java.io.InputStreamReader;
 import java.net.ServerSocket;
 import java.net.Socket;
 
-public class TCPServer extends IntentService {
-    private ServerSocket welcomeSocket;
-    private Socket connectionSocket;
-    private String msg;
-
-    public TCPServer() {
-        super("TCP SERVER");
-    }
-
-    public TCPServer(String name) {
-        super(name);
-    }
+public class TCPServer implements Runnable {
 
     @Override
-    protected void onHandleIntent(Intent workIntent) {
-        Integer port = workIntent.getIntExtra("port", 8080);
+    public void run() {
+        ServerSocket welcomeSocket = null;
+        Socket connectionSocket = null;
+        String msg;
+
+        Integer port = 8080;
         try {
             welcomeSocket = new ServerSocket(port);
             Log.d("TCP", "SERVER STARTED");
@@ -58,6 +49,7 @@ public class TCPServer extends IntentService {
                 e.printStackTrace();
             }
             Log.d("TCP","Received: " + message);
+            DataHolder.getInstance().setStopped(message.equals("stopped"));
         }
     }
 }

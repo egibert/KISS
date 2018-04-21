@@ -33,15 +33,18 @@ import fr.neamar.kiss.adapter.RecordAdapter;
 import fr.neamar.kiss.pojo.AppPojo;
 import fr.neamar.kiss.ui.ListPopup;
 import fr.neamar.kiss.utils.BluetoothComm;
+import fr.neamar.kiss.utils.DataHolder;
 import fr.neamar.kiss.utils.SpaceTokenizer;
 
 public class AppResult extends Result {
     private final AppPojo appPojo;
     private final ComponentName className;
     private Drawable icon = null;
+
     AppResult(AppPojo appPojo) {
         super(appPojo);
         this.appPojo = appPojo;
+
 
         className = new ComponentName(appPojo.packageName, appPojo.activityName);
     }
@@ -258,12 +261,16 @@ public class AppResult extends Result {
     @Override
     public void doLaunch(Context context, View v) {
         try {
-
-            BluetoothComm bt = BluetoothComm.getInstance(context);
             Log.d("APP_NAME", className.getClassName());
             boolean isInList = className.getClassName().equals("com.rogerbassonsrenart.paddletennis.MenuActivity");
-            boolean locked = bt.isLocked();
-            if (!isInList || (isInList && !locked)) {
+            boolean locked = DataHolder.getInstance().isLocked();
+            boolean stopped = DataHolder.getInstance().isStopped();
+            if (stopped) {
+                Log.d("STATE", "Car is stopped");
+            } else {
+                Log.d("STATE", "Car is NOT stopped");
+            }
+            if (stopped || !isInList || (isInList && !locked)) {
                 launchApp(context, v);
             } else {
                 // 1. Instantiate an AlertDialog.Builder with its constructor
