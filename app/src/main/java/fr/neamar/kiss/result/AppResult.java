@@ -262,8 +262,18 @@ public class AppResult extends Result {
             BluetoothComm bt = BluetoothComm.getInstance(context);
             Log.d("APP_NAME", className.getClassName());
             boolean isInList = className.getClassName().equals("com.rogerbassonsrenart.paddletennis.MenuActivity");
-            if (!isInList || (isInList && !bt.isLocked())) {
+            boolean locked = bt.isLocked();
+            if (!isInList || (isInList && !locked)) {
                 launchApp(context, v);
+            } else {
+                // 1. Instantiate an AlertDialog.Builder with its constructor
+                AlertDialog.Builder builder = new AlertDialog.Builder(context);
+                // 2. Chain together various setter methods to set the dialog characteristics
+                builder.setMessage(R.string.dialog_message)
+                        .setTitle(R.string.dialog_title);
+                // 3. Get the AlertDialog from create()
+                AlertDialog dialog = builder.create();
+                dialog.show();
             }
         } catch (ActivityNotFoundException | NullPointerException e) {
             // Application was just removed?

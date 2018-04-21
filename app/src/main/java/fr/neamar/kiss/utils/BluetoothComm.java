@@ -15,7 +15,7 @@ import java.util.UUID;
 public class BluetoothComm {
 
     private final String UUID_DEVICE = "00001101-0000-1000-8000-00805F9B34FB";
-    private final String MAC = "20:FA:BB:02:1B:DE";
+    private final String MAC = "00:18:E4:00:27:B3";
 
     private Context context;
 
@@ -33,9 +33,13 @@ public class BluetoothComm {
     }
 
     public BluetoothComm(Context c) {
-        locked = false;
+        locked = true;
         context = c;
         init();
+        connectToDevice(MAC);
+    }
+
+    public void reconnect() {
         connectToDevice(MAC);
     }
 
@@ -130,9 +134,10 @@ public class BluetoothComm {
                             " bytes received:\n"
                             + strReceived;
                     locked = false;
+                    Log.d("BLUE", strReceived);
                 } catch (IOException e) {
                     // TODO Auto-generated catch block
-                    e.printStackTrace();
+                    //e.printStackTrace();
 
                     final String msgConnectionLost = "Connection lost:\n"
                             + e.getMessage();
