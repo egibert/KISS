@@ -10,5 +10,10 @@ public class DataHolder {
     public void setLocked(Boolean locked) {this.locked = locked;}
 
     private static final DataHolder holder = new DataHolder();
+
+    public DataHolder() {
+        stopped = false;
+        locked = false;
+    }
     public static DataHolder getInstance() {return holder;}
 }

@@ -17,8 +17,6 @@ public class BluetoothComm implements Runnable {
     private final String UUID_DEVICE = "00001101-0000-1000-8000-00805F9B34FB";
     private final String MAC = "00:18:E4:00:27:B3";
 
-    private Context context;
-
     private BluetoothAdapter bluetoothAdapter;
     private BluetoothSocket bluetoothSocket = null;
 
@@ -71,9 +69,8 @@ public class BluetoothComm implements Runnable {
         }
 
         //Turn ON BlueTooth if it is OFF
-        if (!bluetoothAdapter.isEnabled()) {
-            Intent enableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-            ((Activity) context).startActivityForResult(enableIntent, 1);
+        while (!bluetoothAdapter.isEnabled()) {
+            BluetoothAdapter.getDefaultAdapter().enable();
         }
 
         return true;
