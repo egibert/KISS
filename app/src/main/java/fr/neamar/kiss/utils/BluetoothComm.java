@@ -49,9 +49,14 @@ public class BluetoothComm implements Runnable {
                         " bytes received:\n"
                         + strReceived;
 
-                Integer fingers = Integer.parseInt(strReceived);
-                DataHolder.getInstance().setLocked(fingers > 5);
-                Log.d("BLUE", strReceived);
+                try {
+                    Integer fingers = Integer.parseInt(strReceived);
+                    DataHolder.getInstance().setLocked(fingers < 4);
+                    Log.d("BLUE", strReceived);
+                }
+                catch (NumberFormatException nfe) {
+
+                }
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();

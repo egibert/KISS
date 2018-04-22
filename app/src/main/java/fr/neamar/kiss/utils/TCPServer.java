@@ -49,8 +49,14 @@ public class TCPServer implements Runnable {
                 e.printStackTrace();
             }
             Log.d("TCP","Received: " + message);
-            Integer speed = Integer.parseInt(message);
-            DataHolder.getInstance().setStopped(speed < 5);
+            try {
+                Integer speed = Integer.parseInt(message);
+                DataHolder.getInstance().setStopped(speed < 5);
+            }
+            catch (NumberFormatException nfe) {
+
+            }
+
         }
     }
 }
