@@ -49,7 +49,8 @@ public class TCPServer implements Runnable {
                 e.printStackTrace();
             }
             Log.d("TCP","Received: " + message);
-            DataHolder.getInstance().setStopped(message.equals("stopped"));
+            Integer speed = Integer.parseInt(message);
+            DataHolder.getInstance().setStopped(speed < 5);
         }
     }
 }
