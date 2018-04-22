@@ -132,6 +132,8 @@
     <string name="menu_app_uninstall">Uninstall</string>
     <string name="menu_app_hibernate">Hibernate</string>
     <string name="menu_shortcut_remove">Remove shortcut</string>
+    <string name="menu_add_locked">Add to locked applications</string>
+
 
     <string name="toast_hibernate_completed">%s hibernated, relaunch to awake.</string>
     <string name="toast_hibernate_error">%s not hibernated.</string>
@@ -140,6 +142,7 @@
     <string name="menu_phone_create">Create contact</string>
 
     <string name="toast_favorites_added">%s was added to favorites</string>
+    <string name="toast_locked_added">%s was added to locked list</string>
 
     <string name="order_apps_name">App list sort order</string>
     <string name="enable_sms">Show incoming SMSes in history</string>

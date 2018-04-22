@@ -504,6 +504,22 @@ public class DataHandler extends BroadcastReceiver
         }
     }
 
+    public void addToLocked(MainActivity context, String id) {
+
+        String lockedApps = PreferenceManager.getDefaultSharedPreferences(context).
+                getString("locked-apps-list", "");
+
+        if (lockedApps.contains(id + ";")) {
+            return;
+        }
+
+        List<String> lockedAppsList = Arrays.asList(lockedApps.split(";"));
+        lockedApps = lockedApps.substring(lockedApps.indexOf(";") + 1);
+
+        PreferenceManager.getDefaultSharedPreferences(context).edit()
+                .putString("locked-apps-list", lockedApps + id + ";").apply();
+    }
+
     private Pojo getPojo(String id) {
         // Ask all providers if they know this id
         for (ProviderEntry entry : this.providers.values()) {

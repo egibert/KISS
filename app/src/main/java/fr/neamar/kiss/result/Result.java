@@ -188,6 +188,9 @@ public abstract class Result {
             case R.string.menu_favorites_remove:
                 launchRemoveFromFavorites(context, pojo);
                 break;
+            case R.string.menu_add_locked:
+                launchAddToLockedList(context, pojo);
+                break;
         }
 
         //Update Search to reflect favorite add, if the "exclude favorites" option is active
@@ -208,6 +211,12 @@ public abstract class Result {
     private void launchRemoveFromFavorites(Context context, Pojo app) {
         String msg = context.getResources().getString(R.string.toast_favorites_removed);
         KissApplication.getApplication(context).getDataHandler().removeFromFavorites((MainActivity) context, app.id);
+        Toast.makeText(context, String.format(msg, app.getName()), Toast.LENGTH_SHORT).show();
+    }
+
+    private void launchAddToLockedList(Context context, Pojo app) {
+        String msg = context.getResources().getString(R.string.toast_locked_added);
+        KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, app.id);
         Toast.makeText(context, String.format(msg, app.getName()), Toast.LENGTH_SHORT).show();
     }
 

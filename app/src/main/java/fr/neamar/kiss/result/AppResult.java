@@ -94,6 +94,7 @@ public class AppResult extends Result {
         adapter.add(new ListPopup.Item(context, R.string.menu_tags_edit));
         adapter.add(new ListPopup.Item(context, R.string.menu_favorites_remove));
         adapter.add(new ListPopup.Item(context, R.string.menu_app_details));
+        adapter.add(new ListPopup.Item(context, R.string.menu_add_locked));
 
         ListPopup menu = inflatePopupMenu(adapter, context);
 
@@ -258,11 +259,19 @@ public class AppResult extends Result {
         }
     }
 
+    private boolean isInLockedList(String app, Context context) {
+        String lockedApps = PreferenceManager.getDefaultSharedPreferences(context).
+                getString("locked-apps-list", "");
+
+        return lockedApps.contains(app + ";");
+
+    }
+
     @Override
     public void doLaunch(Context context, View v) {
         try {
             Log.d("APP_NAME", className.getClassName());
-            boolean isInList = className.getClassName().equals("com.rogerbassonsrenart.paddletennis.MenuActivity");
+            boolean isInList = isInLockedList(className.getClassName(), context);
             boolean locked = DataHolder.getInstance().isLocked();
             boolean stopped = DataHolder.getInstance().isStopped();
             if (stopped) {

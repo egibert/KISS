@@ -13,7 +13,7 @@ public class DataHolder {
 
     public DataHolder() {
         stopped = false;
-        locked = false;
+        locked = true;
     }
     public static DataHolder getInstance() {return holder;}
 }
