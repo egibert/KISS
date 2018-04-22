@@ -210,7 +210,7 @@
     <string name="get_help">Get help!</string>
     <string name="permission_denied">Permission has been denied</string>
 
-    <string name="dialog_message">Permission has been denied</string>
-    <string name="dialog_title">Permission has been denied</string>
+    <string name="dialog_message">"DON'T TEXT AND DRIVE"</string>
+    <string name="dialog_title">ALERT</string>
 
 </resources>
