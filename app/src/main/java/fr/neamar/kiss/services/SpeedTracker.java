@@ -64,7 +64,7 @@ public class SpeedTracker extends Service {
         intent.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS);
         Uri uri = Uri.fromParts("package", getPackageName(), null);
         intent.setData(uri);
-        
+
         PendingIntent pendingIntent = PendingIntent.getActivity(this, 0, intent, 0);
 
         mBuilder = new Notification.Builder(this)

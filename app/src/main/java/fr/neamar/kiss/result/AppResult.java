@@ -32,7 +32,6 @@ import fr.neamar.kiss.R;
 import fr.neamar.kiss.adapter.RecordAdapter;
 import fr.neamar.kiss.pojo.AppPojo;
 import fr.neamar.kiss.ui.ListPopup;
-import fr.neamar.kiss.utils.BluetoothComm;
 import fr.neamar.kiss.utils.DataHolder;
 import fr.neamar.kiss.utils.SpaceTokenizer;
 
