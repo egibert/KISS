@@ -1,9 +1,9 @@
 package fr.neamar.kiss.utils;
 
 public class DataHolder {
-    private boolean stopped;
-    public boolean isStopped() {return stopped;}
-    public void setStopped(boolean stopped) {this.stopped = stopped;}
+    private float speed;
+    public float getSpeed() {return speed;}
+    public void setSpeed(float speed) {this.speed = speed;}
 
     private boolean locked;
     public boolean isLocked() {return locked;}
@@ -12,7 +12,7 @@ public class DataHolder {
     private static final DataHolder holder = new DataHolder();
 
     public DataHolder() {
-        stopped = true;
+        speed = 0;
         locked = true;
     }
     public static DataHolder getInstance() {return holder;}

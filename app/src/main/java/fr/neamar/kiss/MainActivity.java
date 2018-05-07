@@ -1,19 +1,23 @@
 package fr.neamar.kiss;
 
+import android.Manifest;
 import android.animation.Animator;
 import android.animation.AnimatorListenerAdapter;
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.database.DataSetObserver;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
+import android.support.annotation.RequiresApi;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -42,15 +46,14 @@ import fr.neamar.kiss.searcher.ApplicationsSearcher;
 import fr.neamar.kiss.searcher.QueryInterface;
 import fr.neamar.kiss.searcher.QuerySearcher;
 import fr.neamar.kiss.searcher.Searcher;
+import fr.neamar.kiss.services.SpeedTracker;
 import fr.neamar.kiss.ui.AnimatedListView;
 import fr.neamar.kiss.ui.BottomPullEffectView;
 import fr.neamar.kiss.ui.KeyboardScrollHider;
 import fr.neamar.kiss.ui.ListPopup;
 import fr.neamar.kiss.ui.SearchEditText;
-import fr.neamar.kiss.utils.BluetoothComm;
 import fr.neamar.kiss.utils.PackageManagerUtils;
 import fr.neamar.kiss.utils.SystemUiVisibilityHelper;
-import fr.neamar.kiss.utils.TCPServer;
 
 public class MainActivity extends Activity implements QueryInterface, KeyboardScrollHider.KeyboardHandler, View.OnTouchListener, Searcher.DataObserver {
 
@@ -59,6 +62,8 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
     public static final String FULL_LOAD_OVER = "fr.neamar.summon.FULL_LOAD_OVER";
 
     private static final String TAG = "MainActivity";
+
+    private static final int REQUEST_FINE_LOCATION = 1;
 
     /**
      * Adapter to display records
@@ -142,6 +147,8 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
     /**
      * Called when the activity is first created.
      */
+    @TargetApi(Build.VERSION_CODES.O)
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -318,12 +325,11 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         systemUiVisibilityHelper = new SystemUiVisibilityHelper(this);
 
 
-        Thread tcpServer = new Thread(new TCPServer());
-        tcpServer.start();
-
-        Thread bt = new Thread(new BluetoothComm());
-        bt.start();
-
+        if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
+        }
+        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
+        startService(intent);
         /*
          * Defer everything else to the forwarders
          */

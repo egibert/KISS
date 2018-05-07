@@ -273,7 +273,9 @@ public class AppResult extends Result {
             Log.d("APP_NAME", className.getClassName());
             boolean isInList = isInLockedList(className.getClassName(), context);
             boolean locked = DataHolder.getInstance().isLocked();
-            boolean stopped = DataHolder.getInstance().isStopped();
+            float speed = DataHolder.getInstance().getSpeed();
+
+            boolean stopped = speed <= 5;
             if (stopped) {
                 Log.d("STATE", "Car is stopped");
             } else {
@@ -285,7 +287,8 @@ public class AppResult extends Result {
                 // 1. Instantiate an AlertDialog.Builder with its constructor
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 // 2. Chain together various setter methods to set the dialog characteristics
-                builder.setMessage(R.string.dialog_message)
+                //builder.setMessage(R.string.dialog_message).setTitle(R.string.dialog_title);
+                builder.setMessage("SPEED: " + Float.toString(speed))
                         .setTitle(R.string.dialog_title);
                 // 3. Get the AlertDialog from create()
                 AlertDialog dialog = builder.create();
