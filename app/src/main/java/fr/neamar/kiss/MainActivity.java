@@ -171,7 +171,6 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
 
                 @Override
                 public void onRunError(Exception e) {
-                    Toast.makeText(MainActivity.this, e.getMessage(),Toast.LENGTH_LONG).show();
                     Log.d(TAG, "Runner stopped.");
                 }
 
