@@ -13,6 +13,8 @@ import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.database.DataSetObserver;
+import android.hardware.usb.UsbDeviceConnection;
+import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
@@ -34,8 +36,20 @@ import android.widget.AdapterView;
 import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
+import com.hoho.android.usbserial.driver.UsbSerialDriver;
+import com.hoho.android.usbserial.driver.UsbSerialPort;
+import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.hoho.android.usbserial.util.SerialInputOutputManager;
+
+import java.io.IOException;
+import java.nio.ByteBuffer;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import fr.neamar.kiss.adapter.RecordAdapter;
 import fr.neamar.kiss.broadcast.IncomingCallHandler;
@@ -52,9 +66,11 @@ import fr.neamar.kiss.ui.BottomPullEffectView;
 import fr.neamar.kiss.ui.KeyboardScrollHider;
 import fr.neamar.kiss.ui.ListPopup;
 import fr.neamar.kiss.ui.SearchEditText;
-import fr.neamar.kiss.utils.ArduinoSerialComm;
+import fr.neamar.kiss.utils.DataHolder;
 import fr.neamar.kiss.utils.PackageManagerUtils;
 import fr.neamar.kiss.utils.SystemUiVisibilityHelper;
+
+import static android.content.ContentValues.TAG;
 
 public class MainActivity extends Activity implements QueryInterface, KeyboardScrollHider.KeyboardHandler, View.OnTouchListener, Searcher.DataObserver {
 
@@ -65,6 +81,10 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
     private static final String TAG = "MainActivity";
 
     private static final int REQUEST_FINE_LOCATION = 1;
+
+    private static UsbSerialPort sPort = null;
+    private SerialInputOutputManager mSerialIoManager;
+    private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
 
     /**
      * Adapter to display records
@@ -144,6 +164,27 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
     private PopupWindow mPopup;
 
     private ForwarderManager forwarderManager;
+
+
+    private final SerialInputOutputManager.Listener mListener =
+            new SerialInputOutputManager.Listener() {
+
+                @Override
+                public void onRunError(Exception e) {
+                    Toast.makeText(MainActivity.this, e.getMessage(),Toast.LENGTH_LONG).show();
+                    Log.d(TAG, "Runner stopped.");
+                }
+
+                @Override
+                public void onNewData(final byte[] data) {
+                    Log.d("SERIAL", "READ SERIAL: " + Arrays.toString(data));
+                    ByteBuffer wrapped = ByteBuffer.wrap(data); // big-endian by default
+                    short fingers = wrapped.getShort();
+                    Log.d("SERIAL", "FINGERS: " + fingers);
+                    DataHolder.getInstance().setLocked(fingers < 5);
+                }
+            };
+
 
     /**
      * Called when the activity is first created.
@@ -326,14 +367,17 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         systemUiVisibilityHelper = new SystemUiVisibilityHelper(this);
 
 
+        // GPS Speed Tracker
         if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
         }
         Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
         startService(intent);
 
-        Thread arduinoSerial = new Thread(new ArduinoSerialComm());
-        arduinoSerial.start();
+
+        // Setup Arduino USB serial connection
+        getAnySerialPort();
+
 
         /*
          * Defer everything else to the forwarders
@@ -395,9 +439,66 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
             displayKissBar(false);
         }
 
+        resumeUsbSerial();
+
         forwarderManager.onResume();
 
         super.onResume();
+    }
+
+    private boolean getAnySerialPort() {
+        // Find all available drivers from attached devices.
+        UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
+        List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
+        if (availableDrivers.isEmpty()) {
+            return false;
+        }
+
+        // Open a connection to the first available driver.
+        UsbSerialDriver driver = availableDrivers.get(0);
+        UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
+        if (connection == null) {
+            // You probably need to call UsbManager.requestPermission(driver.getDevice(), ..)
+            return false;
+        }
+
+        // Read some data! Most have just one port (port 0).
+        sPort = driver.getPorts().get(0);
+        return true;
+    }
+
+    private boolean resumeUsbSerial() {
+        Log.d("SERIAL", "Resumed, port=" + sPort);
+        Toast.makeText(this, "Resumed, port=" + sPort,Toast.LENGTH_LONG).show();
+        if (sPort == null) {
+            return false;
+        }
+        final UsbManager usbManager = (UsbManager) getSystemService(Context.USB_SERVICE);
+
+        UsbDeviceConnection connection = usbManager.openDevice(sPort.getDriver().getDevice());
+        if (connection == null) {
+            Toast.makeText(this, "Opening device failed",Toast.LENGTH_LONG).show();
+            Log.d("SERIAL", "Opening device failed");
+            return false;
+        }
+
+        try {
+            sPort.open(connection);
+            sPort.setParameters(9600, 8, UsbSerialPort.STOPBITS_1, UsbSerialPort.PARITY_NONE);
+
+        } catch (IOException e) {
+            Toast.makeText(this, "Error setting up device: " + sPort,Toast.LENGTH_LONG).show();
+            Log.e("SERIAL", "Error setting up device: " + e.getMessage(), e);
+            try {
+                sPort.close();
+            } catch (IOException e2) {
+                // Ignore.
+            }
+            sPort = null;
+            return false;
+        }
+        onDeviceStateChange();
+        return true;
     }
 
     @Override
@@ -705,6 +806,44 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
             searchTask.cancel(true);
             searchTask = null;
         }
+    }
+
+    private void stopIoManager() {
+        if (mSerialIoManager != null) {
+            Log.i("SERIAL", "Stopping io manager ..");
+            mSerialIoManager.stop();
+            mSerialIoManager = null;
+        }
+    }
+
+    private void startIoManager() {
+        if (sPort != null) {
+            Log.i("SERIAL", "Starting io manager ..");
+            mSerialIoManager = new SerialInputOutputManager(sPort, mListener);
+            mExecutor.submit(mSerialIoManager);
+        }
+    }
+
+    private void onDeviceStateChange() {
+        stopIoManager();
+        startIoManager();
+    }
+
+
+    // Close Usb Serial connection
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopIoManager();
+        if (sPort != null) {
+            try {
+                sPort.close();
+            } catch (IOException e) {
+                // Ignore.
+            }
+            sPort = null;
+        }
+        finish();
     }
 
     /**

@@ -29,7 +29,8 @@ dependencies {
         exclude group: 'com.android.support', module: 'support-annotations'
     }
     implementation 'com.android.support:support-annotations:27.1.0'
-    implementation "com.android.support:support-compat:27.1.1"
+    implementation 'com.android.support:support-compat:27.1.1'
+    implementation project(':usbSerialForAndroid')
 }
 
 buildscript {
