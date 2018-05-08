@@ -176,10 +176,9 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
                 }
 
                 @Override
-                public void onNewData(final byte[] data) {
+                public void onNewData(final byte[]data) {
                     Log.d("SERIAL", "READ SERIAL: " + Arrays.toString(data));
-                    ByteBuffer wrapped = ByteBuffer.wrap(data); // big-endian by default
-                    short fingers = wrapped.getShort();
+                    short fingers = (short) data[data.length-1];
                     Log.d("SERIAL", "FINGERS: " + fingers);
                     DataHolder.getInstance().setLocked(fingers < 5);
                 }
