@@ -41,6 +41,7 @@ import android.widget.Toast;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
+import com.hoho.android.usbserial.util.HexDump;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
@@ -165,7 +166,6 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
 
     private ForwarderManager forwarderManager;
 
-
     private final SerialInputOutputManager.Listener mListener =
             new SerialInputOutputManager.Listener() {
 
@@ -176,13 +176,17 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
 
                 @Override
                 public void onNewData(final byte[]data) {
-                    Log.d("SERIAL", "READ SERIAL: " + Arrays.toString(data));
-                    short fingers = (short) data[data.length-1];
-                    Log.d("SERIAL", "FINGERS: " + fingers);
-                    DataHolder.getInstance().setLocked(fingers < 5);
+                    String s = HexDump.toHexString(data);
+                    Log.d("SERIAL", "READ SERIAL: " + s);
+                    s = s.replace("0D", "");
+                    s = s.replace("0A", "");
+                    if (!s.isEmpty()) {
+                        Integer fingers = Character.getNumericValue((char)Integer.parseInt(s, 16));
+                        Log.d("SERIAL", "FINGERS: " + Integer.toString(fingers));
+                        DataHolder.getInstance().setLocked(fingers < 5);
+                    }
                 }
             };
-
 
     /**
      * Called when the activity is first created.
