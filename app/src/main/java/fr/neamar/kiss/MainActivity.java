@@ -52,6 +52,7 @@ import fr.neamar.kiss.ui.BottomPullEffectView;
 import fr.neamar.kiss.ui.KeyboardScrollHider;
 import fr.neamar.kiss.ui.ListPopup;
 import fr.neamar.kiss.ui.SearchEditText;
+import fr.neamar.kiss.utils.ArduinoSerialComm;
 import fr.neamar.kiss.utils.PackageManagerUtils;
 import fr.neamar.kiss.utils.SystemUiVisibilityHelper;
 
@@ -330,6 +331,10 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         }
         Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
         startService(intent);
+
+        Thread arduinoSerial = new Thread(new ArduinoSerialComm());
+        arduinoSerial.start();
+
         /*
          * Defer everything else to the forwarders
          */
