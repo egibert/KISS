@@ -81,6 +81,13 @@
             <meta-data
                 android:name="com.android.systemui.action_assist_icon"
                 android:resource="@drawable/ic_launcher" />
+
+            <intent-filter>
+                <action android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED" />
+            </intent-filter>
+            <meta-data
+                android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
+                android:resource="@xml/device_filter" />
         </activity>
         <activity
             android:name=".DummyActivity"
@@ -161,11 +168,12 @@
         <service android:name=".dataprovider.SearchProvider" />
         <service android:name=".dataprovider.SettingsProvider" />
         <service android:name=".dataprovider.ShortcutsProvider" />
-        <service android:name=".utils.TCPServer" />
         <service
             android:name=".services.SpeedTracker"
             android:enabled="true"
             android:exported="true"></service>
+
+
     </application>
 
 </manifest>
