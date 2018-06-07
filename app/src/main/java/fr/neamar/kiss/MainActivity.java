@@ -20,6 +20,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
+import android.support.v4.content.ContextCompat;
+import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -38,6 +40,15 @@ import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
+import com.androidhiddencamera.CameraConfig;
+import com.androidhiddencamera.HiddenCameraFragment;
+import com.androidhiddencamera.HiddenCameraUtils;
+import com.androidhiddencamera.config.CameraFacing;
+import com.androidhiddencamera.config.CameraImageFormat;
+import com.androidhiddencamera.config.CameraResolution;
+import com.androidhiddencamera.config.CameraRotation;
+import com.gun0912.tedpermission.PermissionListener;
+import com.gun0912.tedpermission.TedPermission;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
@@ -61,6 +72,7 @@ import fr.neamar.kiss.searcher.ApplicationsSearcher;
 import fr.neamar.kiss.searcher.QueryInterface;
 import fr.neamar.kiss.searcher.QuerySearcher;
 import fr.neamar.kiss.searcher.Searcher;
+import fr.neamar.kiss.services.DemoCamService;
 import fr.neamar.kiss.services.SpeedTracker;
 import fr.neamar.kiss.ui.AnimatedListView;
 import fr.neamar.kiss.ui.BottomPullEffectView;
@@ -86,6 +98,8 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
     private static UsbSerialPort sPort = null;
     private SerialInputOutputManager mSerialIoManager;
     private final ExecutorService mExecutor = Executors.newSingleThreadExecutor();
+   // private HiddenCameraFragment mHiddenCameraFragment;
+    private CameraConfig mCameraConfig;
 
     /**
      * Adapter to display records
@@ -198,6 +212,11 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate()");
 
+
+
+
+
+
         KissApplication.getApplication(this).initDataHandler();
 
         /*
@@ -245,12 +264,29 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
          * Set the view and store all useful components
          */
         setContentView(R.layout.main);
-        this.list = this.findViewById(android.R.id.list);
+
+
+
+        mCameraConfig = new CameraConfig()
+                .getBuilder(this)
+                .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
+                .setCameraResolution(CameraResolution.HIGH_RESOLUTION)
+                .setImageFormat(CameraImageFormat.FORMAT_JPEG)
+                .setImageRotation(CameraRotation.ROTATION_270)
+                .build();
+
+
+
+
+
+
+
+        this.list = (AnimatedListView) this.findViewById(android.R.id.list);
         this.listContainer = (View) this.list.getParent();
         this.emptyListView = this.findViewById(android.R.id.empty);
         this.kissBar = findViewById(R.id.mainKissbar);
         this.menuButton = findViewById(R.id.menuButton);
-        this.searchEditText = findViewById(R.id.searchEditText);
+        this.searchEditText = (SearchEditText) findViewById(R.id.searchEditText);
         this.loaderSpinner = findViewById(R.id.loaderBar);
         this.launcherButton = findViewById(R.id.launcherButton);
         this.clearButton = findViewById(R.id.clearButton);
@@ -370,15 +406,94 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
 
 
         // GPS Speed Tracker
-        if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_FINE_LOCATION);
+        if (checkSelfPermission(android.Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(android.Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED && checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED){
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA} ,REQUEST_FINE_LOCATION);
         }
-        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
-        startService(intent);
 
+
+//
+//        PermissionListener permissionlistener = new PermissionListener() {
+//            @Override
+//            public void onPermissionGranted() {
+//                Toast.makeText(MainActivity.this, "Permission Granted", Toast.LENGTH_SHORT).show();
+//
+//                if (HiddenCameraUtils.canOverDrawOtherApps(MainActivity.this)) {
+//
+//
+//                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+//                        //        startForegroundService(new Intent(MainActivity.this, DemoCamService.class));
+//
+//
+//                        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
+//                        startService(intent);
+//
+//                    } else {
+//                        //    context.startService(new Intent(context, LocationService.class));
+//                        //  startService(new Intent(MainActivity.this, DemoCamService.class));
+//
+//
+//                        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
+//                        startService(intent);
+//                    }
+//
+//                }else{
+//
+//                    HiddenCameraUtils.openDrawOverPermissionSetting(MainActivity.this);
+//
+//                }
+//
+//
+//            }
+//
+//            @Override
+//            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
+//                Toast.makeText(MainActivity.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT)
+//                        .show();
+//            }
+//
+//
+//        };
+//
+//        TedPermission.with(this)
+//                .setPermissionListener(permissionlistener)
+//                .setRationaleTitle("Access")
+//                .setRationaleMessage("Please Grant Access")
+//                .setDeniedTitle("Permission denied")
+//                .setDeniedMessage(
+//                        "If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
+//                .setGotoSettingButtonText("Settings")
+//                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION)
+//                .check();
+//
+//
 
         // Setup Arduino USB serial connection
-        getAnySerialPort();
+                getAnySerialPort();
+
+                      if (HiddenCameraUtils.canOverDrawOtherApps(MainActivity.this)) {
+
+
+                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+                        //        startForegroundService(new Intent(MainActivity.this, DemoCamService.class));
+
+
+                        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
+                        startService(intent);
+
+                    } else {
+                        //    context.startService(new Intent(context, LocationService.class));
+                        //  startService(new Intent(MainActivity.this, DemoCamService.class));
+
+
+                        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
+                        startService(intent);
+                    }
+
+                }else{
+
+                    HiddenCameraUtils.openDrawOverPermissionSetting(MainActivity.this);
+
+                }
 
 
         /*
@@ -444,6 +559,29 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         resumeUsbSerial();
 
         forwarderManager.onResume();
+
+//
+//
+//        if (HiddenCameraUtils.canOverDrawOtherApps(MainActivity.this)) {
+//
+//
+//            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+//                startForegroundService(new Intent(MainActivity.this, SpeedTracker.class));
+//            } else {
+//                //    context.startService(new Intent(context, LocationService.class));
+//                startService(new Intent(MainActivity.this, SpeedTracker.class));
+//
+//            }
+//
+//        }else{
+//
+//            HiddenCameraUtils.openDrawOverPermissionSetting(MainActivity.this);
+//
+//        }
+//
+
+
+
 
         super.onResume();
     }

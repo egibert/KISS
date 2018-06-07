@@ -30,7 +30,11 @@ dependencies {
     }
     implementation 'com.android.support:support-annotations:27.1.0'
     implementation 'com.android.support:support-compat:27.1.1'
+    implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation project(':usbSerialForAndroid')
+    implementation 'gun0912.ted:tedpermission:2.2.0'
+    implementation project(':hiddencamera')
+    compile 'org.tensorflow:tensorflow-android:1.5.0'
 }
 
 buildscript {
