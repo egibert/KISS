@@ -206,25 +206,22 @@ public class SpeedTracker extends Service implements CameraCallbacks {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.RGB_565;
         Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-        //Do something with the bitmap
-        //   saveImage(DemoCamService.this, bitmap, imageFile.getName(), "jpeg");
 
         Bitmap resizedbitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true);
         final List<Classifier.Recognition> results = classifier.recognizeImage(resizedbitmap);
         Toast.makeText(this, results.get(0).toString(), Toast.LENGTH_SHORT).show();
 
-
-        Log.d("Image capture", imageFile.getAbsolutePath() + "" + imageFile.getName());
-        //     stopSelf();
-        try {
-            File f = savebitmap(bitmap);
-            Log.d("Image capture", f.getAbsolutePath() + "" + f.getName());
-            //       stopCamera();
-//           onCreate();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+//        Log.d("Image capture", imageFile.getAbsolutePath() + "" + imageFile.getName());
+//        //     stopSelf();
+//        try {
+//            File f = savebitmap(bitmap);
+//            Log.d("Image capture", f.getAbsolutePath() + "" + f.getName());
+//            //       stopCamera();
+////           onCreate();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override

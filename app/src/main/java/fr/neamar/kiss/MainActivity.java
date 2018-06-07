@@ -20,8 +20,6 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
-import android.support.v4.content.ContextCompat;
-import android.support.v7.app.AppCompatActivity;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.util.Log;
@@ -41,14 +39,11 @@ import android.widget.TextView.OnEditorActionListener;
 import android.widget.Toast;
 
 import com.androidhiddencamera.CameraConfig;
-import com.androidhiddencamera.HiddenCameraFragment;
 import com.androidhiddencamera.HiddenCameraUtils;
 import com.androidhiddencamera.config.CameraFacing;
 import com.androidhiddencamera.config.CameraImageFormat;
 import com.androidhiddencamera.config.CameraResolution;
 import com.androidhiddencamera.config.CameraRotation;
-import com.gun0912.tedpermission.PermissionListener;
-import com.gun0912.tedpermission.TedPermission;
 import com.hoho.android.usbserial.driver.UsbSerialDriver;
 import com.hoho.android.usbserial.driver.UsbSerialPort;
 import com.hoho.android.usbserial.driver.UsbSerialProber;
@@ -56,13 +51,12 @@ import com.hoho.android.usbserial.util.HexDump;
 import com.hoho.android.usbserial.util.SerialInputOutputManager;
 
 import java.io.IOException;
-import java.nio.ByteBuffer;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import fr.neamar.kiss.Azure.AzureClient;
 import fr.neamar.kiss.adapter.RecordAdapter;
 import fr.neamar.kiss.broadcast.IncomingCallHandler;
 import fr.neamar.kiss.broadcast.IncomingSmsHandler;
@@ -72,7 +66,6 @@ import fr.neamar.kiss.searcher.ApplicationsSearcher;
 import fr.neamar.kiss.searcher.QueryInterface;
 import fr.neamar.kiss.searcher.QuerySearcher;
 import fr.neamar.kiss.searcher.Searcher;
-import fr.neamar.kiss.services.DemoCamService;
 import fr.neamar.kiss.services.SpeedTracker;
 import fr.neamar.kiss.ui.AnimatedListView;
 import fr.neamar.kiss.ui.BottomPullEffectView;
@@ -82,8 +75,6 @@ import fr.neamar.kiss.ui.SearchEditText;
 import fr.neamar.kiss.utils.DataHolder;
 import fr.neamar.kiss.utils.PackageManagerUtils;
 import fr.neamar.kiss.utils.SystemUiVisibilityHelper;
-
-import static android.content.ContentValues.TAG;
 
 public class MainActivity extends Activity implements QueryInterface, KeyboardScrollHider.KeyboardHandler, View.OnTouchListener, Searcher.DataObserver {
 
@@ -212,11 +203,6 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate()");
 
-
-
-
-
-
         KissApplication.getApplication(this).initDataHandler();
 
         /*
@@ -265,8 +251,6 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
          */
         setContentView(R.layout.main);
 
-
-
         mCameraConfig = new CameraConfig()
                 .getBuilder(this)
                 .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
@@ -274,12 +258,6 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
                 .setImageFormat(CameraImageFormat.FORMAT_JPEG)
                 .setImageRotation(CameraRotation.ROTATION_270)
                 .build();
-
-
-
-
-
-
 
         this.list = (AnimatedListView) this.findViewById(android.R.id.list);
         this.listContainer = (View) this.list.getParent();
@@ -468,32 +446,28 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
 //
 
         // Setup Arduino USB serial connection
-                getAnySerialPort();
+        getAnySerialPort();
 
-                      if (HiddenCameraUtils.canOverDrawOtherApps(MainActivity.this)) {
+        //AzureClient azc = new AzureClient();
+        //DataHolder.getInstance().setClient(azc);
 
-
-                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
-                        //        startForegroundService(new Intent(MainActivity.this, DemoCamService.class));
-
-
-                        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
-                        startService(intent);
-
-                    } else {
-                        //    context.startService(new Intent(context, LocationService.class));
-                        //  startService(new Intent(MainActivity.this, DemoCamService.class));
+        if (HiddenCameraUtils.canOverDrawOtherApps(MainActivity.this)) {
 
 
-                        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
-                        startService(intent);
-                    }
+            if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
+        //        startForegroundService(new Intent(MainActivity.this, DemoCamService.class));
+                Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
+                startService(intent);
 
-                }else{
-
-                    HiddenCameraUtils.openDrawOverPermissionSetting(MainActivity.this);
-
-                }
+            } else {
+        //    context.startService(new Intent(context, LocationService.class));
+        //  startService(new Intent(MainActivity.this, DemoCamService.class));
+                Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
+                startService(intent);
+            }
+        }else{
+            HiddenCameraUtils.openDrawOverPermissionSetting(MainActivity.this);
+        }
 
 
         /*
@@ -579,10 +553,6 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
 //
 //        }
 //
-
-
-
-
         super.onResume();
     }
 

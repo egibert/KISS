@@ -134,7 +134,7 @@ public class DemoCamService extends Service implements CameraCallbacks {
 
                     CameraConfig cameraConfig = new CameraConfig()
                             .getBuilder(DemoCamService.this)
-                            .setCameraFacing(CameraFacing.FRONT_FACING_CAMERA)
+                            .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
                             .setCameraResolution(CameraResolution.MEDIUM_RESOLUTION)
                             .setImageFormat(CameraImageFormat.FORMAT_JPEG)
                             .build();
@@ -154,7 +154,7 @@ public class DemoCamService extends Service implements CameraCallbacks {
                 } else {
                     CameraConfig cameraConfig = new CameraConfig()
                             .getBuilder(DemoCamService.this)
-                            .setCameraFacing(CameraFacing.FRONT_FACING_CAMERA)
+                            .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
                             .setCameraResolution(CameraResolution.MEDIUM_RESOLUTION)
                             .setImageFormat(CameraImageFormat.FORMAT_JPEG)
                             .build();
@@ -195,22 +195,18 @@ public class DemoCamService extends Service implements CameraCallbacks {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.RGB_565;
         Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-        //Do something with the bitmap
-        //   saveImage(DemoCamService.this, bitmap, imageFile.getName(), "jpeg");
-
-        Log.d("Image capture", imageFile.getAbsolutePath() + "" + imageFile.getName());
-        //     stopSelf();
-        try {
-            File f = savebitmap(bitmap);
-            Log.d("Image capture", f.getAbsolutePath() + "" + f.getName());
-            //       stopCamera();
-//           onCreate();
-
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-
+//
+//        Log.d("Image capture", imageFile.getAbsolutePath() + "" + imageFile.getName());
+//        //     stopSelf();
+//        try {
+//            File f = savebitmap(bitmap);
+//            Log.d("Image capture", f.getAbsolutePath() + "" + f.getName());
+//            //       stopCamera();
+////           onCreate();
+//
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     @Override
