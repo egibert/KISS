@@ -1,7 +1,7 @@
+car radio
+car stick shift
 dashboard
 floor mat
 headrest
-left side mirror
-right side mirror
 seats
 steering wheel

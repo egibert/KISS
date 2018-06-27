@@ -259,11 +259,21 @@ public class AppResult extends Result {
     }
 
     private boolean isInLockedList(String app, Context context) {
-        String lockedApps = PreferenceManager.getDefaultSharedPreferences(context).
-                getString("locked-apps-list", "");
+        String lockedApps = PreferenceManager.getDefaultSharedPreferences(context).getString("locked-apps-list", "");
+
+        if(DataHolder.getInstance().getFirstTime() == true) {
+            KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, "app://com.android.chrome/com.google.android.apps.chrome.Main");
+            KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, "app://com.facebook.katana/com.facebook.katana.LoginActivity");
+            KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, "app://com.google.android.gm/com.google.android.gm.ConversationListActivityGmail");
+            KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, "app://com.google.android.apps.messaging/com.google.android.apps.messaging.ui.ConversationListActivity");
+            KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, "app://com.facebook.orca/com.facebook.orca.auth.StartScreenActivity");
+            KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, "app://com.google.android.youtube/com.google.android.youtube.app.honeycomb.Shell$HomeActivity");
+            KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, "app://com.whatsapp/com.whatsapp.Main");
+            KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, "app://com.android.dialer/com.android.dialer.DialtactsActivity");
+            DataHolder.getInstance().setFirstTime(false);
+        }
 
         return lockedApps.contains(app + ";");
-
     }
 
     @Override
@@ -271,15 +281,28 @@ public class AppResult extends Result {
         try {
             Log.d("APP_NAME", className.getClassName());
             boolean isInList = isInLockedList(className.getClassName(), context);
-            boolean locked = DataHolder.getInstance().isLocked();
-            float speed = DataHolder.getInstance().getSpeed();
-
-            boolean stopped = speed <= 5;
-            if (stopped) {
-                Log.d("STATE", "Car is stopped");
-            } else {
-                Log.d("STATE", "Car is NOT stopped");
+            boolean locked = true;
+            if(DataHolder.getInstance().getUsb() == true) {
+                if(DataHolder.getInstance().getFingers() < 5 && DataHolder.getInstance().getCarLocation().value <=5) {
+                    locked = true;
+                }else {
+                    if(DataHolder.getInstance().getCarLocation().value == 2) {
+                        locked = true;
+                    }else {
+                        locked = false;
+                    }
+                }
+            }else {
+                if(DataHolder.getInstance().getCarLocation().value <=5) {
+                    locked = true;
+                } else {
+                    locked = false;
+                }
             }
+
+            float speed = DataHolder.getInstance().getSpeed();
+            boolean stopped = speed <= 10;
+
             if (stopped || !isInList || (isInList && !locked)) {
                 launchApp(context, v);
             } else {
@@ -287,9 +310,8 @@ public class AppResult extends Result {
                 AlertDialog.Builder builder = new AlertDialog.Builder(context);
                 // 2. Chain together various setter methods to set the dialog characteristics
                 //builder.setMessage(R.string.dialog_message).setTitle(R.string.dialog_title);
-                builder.setMessage("SPEED: " + Float.toString(speed))
-                        .setTitle(R.string.dialog_title);
-                // 3. Get the AlertDialog from create()
+                builder.setMessage("It looks like you are in front of the car going at: " + Float.toString(speed) + " mph and you have " + DataHolder.getInstance().getFingers() + " fingers. Please don't text and drive.").setTitle(R.string.dialog_title);
+                // 3. Get the AlertDialog launchAppfrom create()
                 AlertDialog dialog = builder.create();
                 dialog.show();
             }

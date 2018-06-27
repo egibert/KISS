@@ -18,6 +18,8 @@ import android.widget.ImageView;
 import android.widget.ListAdapter;
 import android.widget.Toast;
 
+import com.hoho.android.usbserial.util.SerialInputOutputManager;
+
 import java.lang.ref.WeakReference;
 import java.text.NumberFormat;
 
@@ -217,7 +219,8 @@ public abstract class Result {
     private void launchAddToLockedList(Context context, Pojo app) {
         String msg = context.getResources().getString(R.string.toast_locked_added);
         KissApplication.getApplication(context).getDataHandler().addToLocked((MainActivity) context, app.id);
-        Toast.makeText(context, String.format(msg, app.getName()), Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, String.format(msg, app.getName()), Toast.LENGTH_LONG).show();
+        Log.d("APP_ID", app.id);
     }
 
     /**

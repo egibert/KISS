@@ -10,17 +10,19 @@ import com.microsoft.azure.sdk.iot.device.MessageCallback;
 import java.io.IOException;
 import java.net.URISyntaxException;
 
+import fr.neamar.kiss.utils.DataHolder;
+
 public class AzureClient implements IotHubEventCallback {
 
-    private static final String connString = "HostName=TextAndDriveHub.azure-devices.net;DeviceId=MyJavaDevice;SharedAccessKey=Awc1KvGNKTDvSuuB7yPijhlYu1eQfgWPT4hy7WyEL+A=";
-    private static final String deviceID = "MyJavaDevice";
+
     private static final IotHubClientProtocol protocol = IotHubClientProtocol.MQTT;
     private static DeviceClient client;
 
     public AzureClient() {
         // Connect to the IoT hub.
         try {
-            client = new DeviceClient(connString, protocol);
+
+            client = new DeviceClient(DataHolder.getInstance().getConnString(), protocol);
             MessageCallback callback = new AppMessageCallback();
             client.setMessageCallback(callback, null);
             client.open();

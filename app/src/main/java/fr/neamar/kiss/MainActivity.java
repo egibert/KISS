@@ -18,6 +18,7 @@ import android.hardware.usb.UsbManager;
 import android.os.Build;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
+import android.provider.ContactsContract;
 import android.support.annotation.NonNull;
 import android.support.annotation.RequiresApi;
 import android.text.Editable;
@@ -187,8 +188,9 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
                     s = s.replace("0A", "");
                     if (!s.isEmpty()) {
                         Integer fingers = Character.getNumericValue((char)Integer.parseInt(s, 16));
-                        Log.d("SERIAL", "FINGERS: " + Integer.toString(fingers));
-                        DataHolder.getInstance().setLocked(fingers < 5);
+                        //Log.d("SERIAL", "FINGERS: " + Integer.toString(fingers));
+                        DataHolder.getInstance().setFingers(fingers);
+                        //DataHolder.getInstance().setLocked(fingers < 5);
                     }
                 }
             };
@@ -256,15 +258,15 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
                 .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
                 .setCameraResolution(CameraResolution.HIGH_RESOLUTION)
                 .setImageFormat(CameraImageFormat.FORMAT_JPEG)
-                .setImageRotation(CameraRotation.ROTATION_270)
+                .setImageRotation(CameraRotation.ROTATION_90)
                 .build();
 
-        this.list = (AnimatedListView) this.findViewById(android.R.id.list);
+        this.list = this.findViewById(android.R.id.list);
         this.listContainer = (View) this.list.getParent();
         this.emptyListView = this.findViewById(android.R.id.empty);
         this.kissBar = findViewById(R.id.mainKissbar);
         this.menuButton = findViewById(R.id.menuButton);
-        this.searchEditText = (SearchEditText) findViewById(R.id.searchEditText);
+        this.searchEditText = findViewById(R.id.searchEditText);
         this.loaderSpinner = findViewById(R.id.loaderBar);
         this.launcherButton = findViewById(R.id.launcherButton);
         this.clearButton = findViewById(R.id.clearButton);
@@ -388,63 +390,6 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION,Manifest.permission.WRITE_EXTERNAL_STORAGE,Manifest.permission.CAMERA} ,REQUEST_FINE_LOCATION);
         }
 
-
-//
-//        PermissionListener permissionlistener = new PermissionListener() {
-//            @Override
-//            public void onPermissionGranted() {
-//                Toast.makeText(MainActivity.this, "Permission Granted", Toast.LENGTH_SHORT).show();
-//
-//                if (HiddenCameraUtils.canOverDrawOtherApps(MainActivity.this)) {
-//
-//
-//                    if (Build.VERSION.SDK_INT > Build.VERSION_CODES.N_MR1) {
-//                        //        startForegroundService(new Intent(MainActivity.this, DemoCamService.class));
-//
-//
-//                        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
-//                        startService(intent);
-//
-//                    } else {
-//                        //    context.startService(new Intent(context, LocationService.class));
-//                        //  startService(new Intent(MainActivity.this, DemoCamService.class));
-//
-//
-//                        Intent intent = new Intent(MainActivity.this, SpeedTracker.class);
-//                        startService(intent);
-//                    }
-//
-//                }else{
-//
-//                    HiddenCameraUtils.openDrawOverPermissionSetting(MainActivity.this);
-//
-//                }
-//
-//
-//            }
-//
-//            @Override
-//            public void onPermissionDenied(ArrayList<String> deniedPermissions) {
-//                Toast.makeText(MainActivity.this, "Permission Denied\n" + deniedPermissions.toString(), Toast.LENGTH_SHORT)
-//                        .show();
-//            }
-//
-//
-//        };
-//
-//        TedPermission.with(this)
-//                .setPermissionListener(permissionlistener)
-//                .setRationaleTitle("Access")
-//                .setRationaleMessage("Please Grant Access")
-//                .setDeniedTitle("Permission denied")
-//                .setDeniedMessage(
-//                        "If you reject permission,you can not use this service\n\nPlease turn on permissions at [Setting] > [Permission]")
-//                .setGotoSettingButtonText("Settings")
-//                .setPermissions(Manifest.permission.WRITE_EXTERNAL_STORAGE, Manifest.permission.CAMERA,Manifest.permission.ACCESS_COARSE_LOCATION,Manifest.permission.ACCESS_FINE_LOCATION)
-//                .check();
-//
-//
-
         // Setup Arduino USB serial connection
         getAnySerialPort();
 
@@ -561,6 +506,7 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         UsbManager manager = (UsbManager) getSystemService(Context.USB_SERVICE);
         List<UsbSerialDriver> availableDrivers = UsbSerialProber.getDefaultProber().findAllDrivers(manager);
         if (availableDrivers.isEmpty()) {
+            DataHolder.getInstance().setUsb(false);
             return false;
         }
 
@@ -569,11 +515,13 @@ public class MainActivity extends Activity implements QueryInterface, KeyboardSc
         UsbDeviceConnection connection = manager.openDevice(driver.getDevice());
         if (connection == null) {
             // You probably need to call UsbManager.requestPermission(driver.getDevice(), ..)
+            DataHolder.getInstance().setUsb(false);
             return false;
         }
 
         // Read some data! Most have just one port (port 0).
         sPort = driver.getPorts().get(0);
+        DataHolder.getInstance().setUsb(true);
         return true;
     }
 

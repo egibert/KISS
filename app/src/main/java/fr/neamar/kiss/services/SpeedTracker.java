@@ -39,6 +39,7 @@ import com.androidhiddencamera.HiddenCameraUtils;
 import com.androidhiddencamera.config.CameraFacing;
 import com.androidhiddencamera.config.CameraImageFormat;
 import com.androidhiddencamera.config.CameraResolution;
+import com.androidhiddencamera.config.CameraRotation;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -49,11 +50,14 @@ import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 
+import fr.neamar.kiss.Azure.JSONMessage;
 import fr.neamar.kiss.Classifier;
 import fr.neamar.kiss.MainActivity;
 import fr.neamar.kiss.R;
 import fr.neamar.kiss.TensorFlowImageClassifier;
 import fr.neamar.kiss.utils.DataHolder;
+
+import com.microsoft.azure.sdk.iot.device.Message;
 
 public class SpeedTracker extends Service implements CameraCallbacks {
 
@@ -61,7 +65,7 @@ public class SpeedTracker extends Service implements CameraCallbacks {
     private static int NOTIFICATION_ID = 1;
     private static final String CHANNEL_ID = "channel_01";
     final Handler mHandler = new Handler();
-    private final static int INTERVAL = 1000 * 20; //5 Minute
+    private final static int INTERVAL = 5000; //* 20; //20 seconds
 
     private CameraPreview mCameraPreview;
     private WindowManager mWindowManager;
@@ -76,6 +80,9 @@ public class SpeedTracker extends Service implements CameraCallbacks {
 
     private static final String MODEL_FILE = "file:///android_asset/graph.pb";
     private static final String LABEL_FILE = "file:///android_asset/labels.txt";
+
+    private Location mLastLocation;
+    private float SpeedMph;
 
 
     @Override
@@ -93,6 +100,7 @@ public class SpeedTracker extends Service implements CameraCallbacks {
                             .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
                             .setCameraResolution(CameraResolution.MEDIUM_RESOLUTION)
                             .setImageFormat(CameraImageFormat.FORMAT_JPEG)
+                            .setImageRotation(CameraRotation.ROTATION_90)
                             .build();
 
                     startCamera(cameraConfig);
@@ -113,6 +121,7 @@ public class SpeedTracker extends Service implements CameraCallbacks {
                             .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
                             .setCameraResolution(CameraResolution.MEDIUM_RESOLUTION)
                             .setImageFormat(CameraImageFormat.FORMAT_JPEG)
+                            .setImageRotation(CameraRotation.ROTATION_90)
                             .build();
 
                     startCamera(cameraConfig);
@@ -137,8 +146,31 @@ public class SpeedTracker extends Service implements CameraCallbacks {
         LocationListener locationListener = new LocationListener() {
             public void onLocationChanged(Location location) {
                 float speed = location.getSpeed() * 3600 / 1000;
-                updateNotificationSpeed(speed);
-                DataHolder.getInstance().setSpeed(speed);
+                float f = speed / 2;
+                float s = f / 4;
+                float mph = f + s;
+                SpeedMph = mph;
+                updateNotificationSpeed(mph, DataHolder.getInstance().getFingers());
+                DataHolder.getInstance().setSpeed(mph);
+                mLastLocation = location;
+
+                //double speed = 0;
+
+                //if (mLastLocation != null) {
+                //    speed = Math.sqrt(
+                //            Math.pow(location.getLongitude() - mLastLocation.getLongitude(), 2)
+                //                    + Math.pow(location.getLatitude() - mLastLocation.getLatitude(), 2)
+                //    ) / (location.getTime() - mLastLocation.getTime());
+                //}
+                //if there is speed from location
+                //if (location.hasSpeed()) {
+                //    speed = location.getSpeed();
+                //}
+
+                //mLastLocation = location;
+
+                //updateNotificationSpeed(speed);
+                //DataHolder.getInstance().setSpeed(speed);
             }
 
             public void onStatusChanged(String provider, int status, Bundle extras) {
@@ -188,12 +220,14 @@ public class SpeedTracker extends Service implements CameraCallbacks {
         return this.mBuilder;
     }
 
-    public void updateNotificationSpeed(float speed) {
+    public void updateNotificationSpeed(double speed, int fingers) {
         Notification.Builder b = getNotificationBuilder();
 
-        b.setContentText("SPEED: " + Float.toString(speed));
+        b.setContentText("SPEED: " + Double.toString(speed) + " Fingers: " + fingers);
         NotificationManager notificationManager = (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
         notificationManager.notify(NOTIFICATION_ID, b.build());
+
+        //Toast.makeText(this, Double.toString(speed), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -206,22 +240,24 @@ public class SpeedTracker extends Service implements CameraCallbacks {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inPreferredConfig = Bitmap.Config.RGB_565;
         Bitmap bitmap = BitmapFactory.decodeFile(imageFile.getAbsolutePath(), options);
-
         Bitmap resizedbitmap = Bitmap.createScaledBitmap(bitmap, INPUT_SIZE, INPUT_SIZE, true);
         final List<Classifier.Recognition> results = classifier.recognizeImage(resizedbitmap);
-        Toast.makeText(this, results.get(0).toString(), Toast.LENGTH_SHORT).show();
+        String renum = results.get(0).getTitle().replaceAll(" ", "_").toUpperCase();
+        DataHolder.getInstance().setCarLocation(Enum.valueOf(DataHolder.Locations.class, renum));
 
-//        Log.d("Image capture", imageFile.getAbsolutePath() + "" + imageFile.getName());
-//        //     stopSelf();
-//        try {
-//            File f = savebitmap(bitmap);
-//            Log.d("Image capture", f.getAbsolutePath() + "" + f.getName());
-//            //       stopCamera();
-////           onCreate();
-//
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
+        if(results.get(0).getConfidence() < 60) {
+//            JSONMessage data = new JSONMessage();
+//            data.latitude = mLastLocation.getLatitude();
+//            data.longitude = mLastLocation.getLongitude();
+//            data.speed = SpeedMph;
+//            data.deviceId = DataHolder.getInstance().getDeviceID();
+//            data.img = data.getImageUri(this,bitmap).toString();
+//            String msgStr = data.serialize();
+//            Message msg = new Message(msgStr);
+//            DataHolder.getInstance().getClient().SendMessage(msg);
+        }
+
+        Toast.makeText(this, results.get(0).toString(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
@@ -230,7 +266,7 @@ public class SpeedTracker extends Service implements CameraCallbacks {
             case CameraError.ERROR_CAMERA_OPEN_FAILED:
                 //Camera open failed. Probably because another application
                 //is using the camera
-                Toast.makeText(this, "Cannot open camera.", Toast.LENGTH_LONG).show();
+                //Toast.makeText(this, "Cannot open camera.", Toast.LENGTH_LONG).show();
                 break;
             case CameraError.ERROR_IMAGE_WRITE_FAILED:
                 //Image write failed. Please check if you have provided WRITE_EXTERNAL_STORAGE permission
@@ -280,9 +316,10 @@ public class SpeedTracker extends Service implements CameraCallbacks {
             //     new SendPostRequest1().execute();
             CameraConfig cameraConfig = new CameraConfig()
                     .getBuilder(SpeedTracker.this)
-                    .setCameraFacing(CameraFacing.FRONT_FACING_CAMERA)
+                    .setCameraFacing(CameraFacing.REAR_FACING_CAMERA)
                     .setCameraResolution(CameraResolution.MEDIUM_RESOLUTION)
                     .setImageFormat(CameraImageFormat.FORMAT_JPEG)
+                    .setImageRotation(CameraRotation.ROTATION_90)
                     .build();
 
             if (ActivityCompat.checkSelfPermission(SpeedTracker.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
